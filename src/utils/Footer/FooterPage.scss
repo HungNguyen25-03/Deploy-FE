@@ -1,0 +1,60 @@
+.Footer {
+  background-color: #DCF2F1;
+  padding: 20px 0;
+  color: rgb(0, 0, 0);
+  margin-top: 35px;
+
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .content__footer {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      .text {
+        display: flex;
+        align-items: center;
+        img {
+          width: 50px;
+          height: auto;
+        }
+        .logo {
+          font-size: 24px;
+          font-weight: bold;
+          margin-left: 10px;
+        }
+      }
+      .info {
+        .info__address,
+        .info__phone,
+        .info__email {
+          margin-bottom: 10px;
+          i {
+            margin-right: 5px;
+          }
+        }
+      }
+    }
+    .mission {
+      margin-top: 20px;
+      .mission__title {
+        font-size: 18px;
+        font-weight: bold;
+      }
+      .mission__content,
+      .mission__content__1,
+      .mission__content__2,
+      .mission__content__3,
+      .mission__content__4 {
+        margin-top: 10px;
+      }
+    }
+  }
+  .copyright {
+    margin-top: 20px;
+    font-size: 17px;
+    text-align: center;
+    color: rgb(100, 93, 93);
+  }
+}
