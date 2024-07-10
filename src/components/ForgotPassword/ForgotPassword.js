@@ -4,6 +4,7 @@ import useAuth from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { MainAPI } from "../API";
 import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { FaUser } from "react-icons/fa";
 import { MdOutlineArrowBack } from "react-icons/md";
 import axios from "axios";
