@@ -1,6 +1,7 @@
 .usefull_container {
   display: flex;
   justify-content: space-between;
+  transition: 0.3 ease;
 
   .usefull_detail {
     width: 24%;
@@ -22,5 +23,8 @@
         object-fit: cover;
       }
     }
+  }
+  :hover {
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
   }
 }
