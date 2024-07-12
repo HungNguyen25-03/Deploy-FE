@@ -5,6 +5,7 @@ import "./ConfirmOrder.scss";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MainAPI } from "../../API";
+import { convertSQLDate, formatVND } from "../../../utils/Format";
 
 export default function ConfirmOrder() {
   const getStatusClass = (status) => {
@@ -16,7 +17,7 @@ export default function ConfirmOrder() {
         return "status-complete";
       case "pending":
         return "status-pending";
-      case "Completed":
+      case "delivered":
         return "status-delivery";
       case "confirmed":
         return "status-confirm";
@@ -131,23 +132,23 @@ export default function ConfirmOrder() {
             {dataConfirm.map((confirm) => (
               <tr key={confirm.order_id}>
                 <td>{confirm.order_id}</td>
-                <td>{confirm.order_date}</td>
+                <td>{convertSQLDate(confirm.order_date)}</td>
                 <td>{confirm.username}</td>
                 <td className={getStatusClass(confirm.status)}>
                   <span className="status-dot"></span>
                   {confirm.status}
                 </td>
-                <td>{confirm.total_amount} đ</td>
+                <td>{formatVND(confirm.total_amount)}</td>
                 {checkStatusIsPending(confirm.status) ? (
                   <td>
                     <button
-                      className="action-btn"
+                      className="action-btn-confirm"
                       onClick={() => handleSetConfirm(confirm)}
                     >
                       <IoMdCheckbox color="green" size="25px" />
                     </button>
                     <button
-                      className="action-btn"
+                      className="action-btn-cancel"
                       onClick={() => handleSetCancel(confirm)}
                     >
                       <FaWindowClose color="red" size="22px" />

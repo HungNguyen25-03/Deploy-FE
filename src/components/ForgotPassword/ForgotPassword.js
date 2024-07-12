@@ -4,7 +4,6 @@ import useAuth from "../../hooks/useAuth";
 import { Link, useNavigate } from "react-router-dom";
 import { MainAPI } from "../API";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { FaUser } from "react-icons/fa";
 import { MdOutlineArrowBack } from "react-icons/md";
 import axios from "axios";
@@ -39,7 +38,7 @@ export default function ForgotPassword() {
         <ToastContainer autoClose={2000} />
         <div className="login-form">
           <div
-            className="fs-3 text-start"
+            className="fs-3 text-start back-btn"
             onClick={() => {
               nav("/login");
             }}

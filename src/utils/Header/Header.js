@@ -10,6 +10,8 @@ import useOrder from "../../hooks/useOrder";
 import { MdLogin } from "react-icons/md";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { CartContext } from "../../components/Cart/CartContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function HeaderPage() {
   const [searchValue, setSearchValue] = useState("");
@@ -35,8 +37,10 @@ export default function HeaderPage() {
         localStorage.removeItem("auth");
         setAuth({});
         setOrderInfomation({});
-        // toast.success("Đăng xuất thành công");
-        nav("/home");
+        toast.success("Đăng xuất thành công");
+        setTimeout(() => {
+          nav("/home");
+        }, 2000);
       })
       .catch((err) => {
         console.log(err);
@@ -54,10 +58,12 @@ export default function HeaderPage() {
 
   return (
     <div className=" search-bar">
+      <ToastContainer />
       <div className="container">
         <div className="row justify-content-between align-items-center">
           <div
             className="logo col-3"
+            style={{ cursor: "pointer" }}
             onClick={() => {
               nav("/home");
             }}
@@ -84,9 +90,13 @@ export default function HeaderPage() {
               <>
                 <Link to="/cart" className="acc">
                   <div className="acc_icon">
-                    <FaShoppingCart />
+                    <button type="button" class="btn position-relative">
+                      <FaShoppingCart />
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {cartList.length <= 10 ? cartList.length : 10 + "+"}
+                      </span>
+                    </button>
                   </div>
-                  <div className="detail">Giỏ hàng({cartList.length})</div>
                   &nbsp;
                 </Link>
                 <Link to="/customer-account" className="acc">

@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { MdOutlineArrowBack } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { MainAPI } from "../API";
 import { FaEyeSlash, FaLock } from "react-icons/fa";
 import { IoEyeSharp } from "react-icons/io5";
@@ -40,9 +39,7 @@ export default function ResetPassword() {
       .then((res) => {
         console.log(res.data);
         toast.success(res.data.message);
-        setTimeout(() => {
-          nav("/login");
-        }, 2000);
+        nav("/login");
       })
       .catch((err) => {
         console.log(err);

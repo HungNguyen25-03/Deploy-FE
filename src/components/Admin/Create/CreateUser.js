@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import NavBar from "../NavBar/NavBar";
-import "./Edit.scss";
+import { useNavigate } from "react-router-dom";
 import { MainAPI } from "../../API";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import NavBar from "../NavBar/NavBar";
 
-export default function Edit() {
-  const { id } = useParams();
+export default function CreateUser() {
   const nav = useNavigate();
   const [user, setUser] = useState({
     username: "",
@@ -17,50 +14,29 @@ export default function Edit() {
     role_id: "",
   });
   const [errors, setErrors] = useState([]);
-
   console.log(user);
-  const [role, setRole] = useState("");
-  let passwordFromDb;
 
-  useEffect(() => {
-    fetch(`${MainAPI}/admin/getUser/${id}`, {
-      headers: {
-        "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const result = data.user[0];
-        setUser({
-          username: result.username,
-          role_id: result.role_id,
-          password: result.password,
-          email: result.email,
-        });
-        setRole(result.role_id);
-      });
-  }, []);
-
-  const handleSubmit = (e) => {
+  function handleSubmit(e) {
     e.preventDefault();
     axios
-      .put(`${MainAPI}/admin/update/${id}`, user, {
+      .post(`${MainAPI}/admin/create`, user, {
         headers: {
           "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
         },
       })
       .then((res) => {
-        toast.success(res.data.message);
-        setTimeout(() => {
-          nav("/admin/user");
-        }, 2000);
+        if (res.status === 200) {
+          toast.success(res.data.message);
+          setTimeout(() => {
+            nav("/admin/user");
+          }, 2000);
+        }
       })
       .catch((err) => {
-        console.log(err.response.data.errors);
+        console.log(err);
         setErrors(err.response.data.errors);
       });
-  };
-
+  }
   const specificError = (name) => {
     return errors.find((err) => {
       return err.name === name;
@@ -120,11 +96,38 @@ export default function Edit() {
               )}
 
               <div>
+                <label htmlFor="email">Mật khẩu: </label>
+                <input
+                  type="text"
+                  name="password"
+                  className="form-control"
+                  placeholder="Mật khẩu"
+                  value={user.password}
+                  onChange={(e) => {
+                    setUser({
+                      ...user,
+                      password: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+              {specificError("password") && (
+                <p className="text-danger fw-bold m-0">
+                  {specificError("password").message}
+                </p>
+              )}
+
+              <div>
                 <label>Role:</label>
                 <select
                   className="form-select"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                  value={user.role_id}
+                  onChange={(e) =>
+                    setUser({
+                      ...user,
+                      role_id: e.target.value,
+                    })
+                  }
                 >
                   <option value="admin">Admin</option>
                   <option value="staff">Staff</option>
@@ -132,7 +135,7 @@ export default function Edit() {
                 </select>
               </div>
               <br />
-              <button className="btn btn-info">Lưu</button>
+              <button className="btn btn-info">Tạo</button>
             </form>
           </div>
         </div>

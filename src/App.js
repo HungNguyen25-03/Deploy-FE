@@ -20,6 +20,8 @@ import SearchPage from "./components/HomePage/Search/SearchPage.js";
 import Trackorder from "./components/UserAccount/Sidebar/ScreenCustomerAccount/TrackingOrder/Trackorder.js";
 import ForgotPassword from "./components/ForgotPassword/ForgotPassword.js";
 import ResetPassword from "./components/ForgotPassword/ResetPassword.js";
+import BrandPage from "./components/HomePage/Content/Brand/BrandPage.js";
+import CreateUser from "./components/Admin/Create/CreateUser.js";
 
 function App() {
   return (
@@ -33,6 +35,7 @@ function App() {
           <Route path="/register" element={<Register />}></Route>
           <Route path="/blogs" element={<Blog />}></Route>
           <Route path="/search" element={<SearchPage />}></Route>
+          <Route path="/brand/:brand_name" element={<BrandPage />}></Route>
           <Route path="/reset-password" element={<ResetPassword />}></Route>
           <Route path="/forgot-password" element={<ForgotPassword />}></Route>
           <Route path="/trackorder/:id" element={<Trackorder />}></Route>
@@ -55,6 +58,7 @@ function App() {
             <Route path="/admin" element={<NavBar />}></Route>
             <Route path="/admin/user" element={<UserManagement />}></Route>
             <Route path="/admin/edit/:id" element={<Edit />}></Route>
+            <Route path="/admin/create" element={<CreateUser />}></Route>
             <Route path="/admin/dashboard" element={<Dashboard />}></Route>
           </Route>
 

@@ -10,9 +10,9 @@ import { useNavigate } from "react-router-dom";
 export default function CustomerDangGiao({ title }) {
   const [deliveredOrderList, setDeliveredOrderList] = useState([]);
   const { auth } = useAuth();
-  const nav = useNavigate()
+  const nav = useNavigate();
 
-  useEffect(() => {
+  const fetchData = () => {
     axios
       .post(`${MainAPI}/order/get-order-by-user-id-delivered-status`, {
         user_id: auth.user.user_id,
@@ -24,6 +24,10 @@ export default function CustomerDangGiao({ title }) {
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   const confirmOrder = (order_id) => {
@@ -39,6 +43,7 @@ export default function CustomerDangGiao({ title }) {
       )
       .then((res) => {
         toast.success(res.data.message);
+        fetchData();
         console.log(res);
       })
       .catch((err) => {
@@ -47,8 +52,8 @@ export default function CustomerDangGiao({ title }) {
   };
 
   const handTrackOrder = (id) => {
-    console.log(id)
-    nav(`/trackorder/${id}`)
+    console.log(id);
+    nav(`/trackorder/${id}`);
   };
 
   return (
@@ -71,10 +76,9 @@ export default function CustomerDangGiao({ title }) {
           return (
             <>
               <div style={{ textAlign: "right" }}>
-                <button
+                <button className="btn btn-primary m-0"
                   style={{
                     border: "none",
-                    backgroundColor: "#00CCFF",
                     borderRadius: "10px",
                     color: "white",
                     padding: "10px",

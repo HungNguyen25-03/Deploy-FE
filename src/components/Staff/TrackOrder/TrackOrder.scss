@@ -41,6 +41,10 @@
             .status-cancel {
                 color: #dc3545;
             }
+
+            .status-paid {
+                color: #ff4d00;
+            }
     
             .status-complete {
                 color: #28a745;
@@ -50,7 +54,7 @@
                 color: #ffc107;
             }
     
-            .status-delevery {
+            .status-delivered {
                 color: #a304ff;
             }
     
@@ -69,6 +73,10 @@
             .status-cancel .status-dot {
                 background-color: #dc3545;
             }
+
+            .status-paid .status-dot {
+                background-color: #ff4d00;
+            }
     
             .status-complete .status-dot {
                 background-color: #28a745;
@@ -78,7 +86,7 @@
                 background-color: #ffc107;
             }
     
-            .status-delevery .status-dot {
+            .status-delivered .status-dot {
                 background-color: #a304ff;
             }
     

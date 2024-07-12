@@ -11,7 +11,7 @@ export default function BrandPage() {
   const [allProductList, setAllProductList] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(0);
-  const [isBrandPage, setIsBrandPage] = useState(true);
+  const [isBrandPage, setIsBrandPage] = useState(false);
   console.log(brand_name);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function BrandPage() {
         `${MainAPI}/product/getProductBrand?brand_name=${brand_name}&page=${page}&pageSize=12`
       )
       .then((res) => {
-        // console.log(res.data.inStockProducts);
+        console.log(res.data);
         setAllProductList([
           ...res.data.inStockProducts,
           ...res.data.outOfStockProducts,
