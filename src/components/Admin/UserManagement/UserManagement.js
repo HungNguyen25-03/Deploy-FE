@@ -144,16 +144,7 @@ export default function UserManagement() {
             >
               Add User
             </button>
-            {modalOpen && (
-              <Modal
-                success={success}
-                errors={errors}
-                closeModal={() => {
-                  setModalOpen(false);
-                }}
-                onSubmit={handleSubmit}
-              />
-            )}
+  
           </div>
         </div>
         <div className="table mt-3">
