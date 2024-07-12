@@ -3,7 +3,6 @@ import NavBar from "../NavBar/NavBar";
 import DataTable from "react-data-table-component";
 import { MdModeEdit } from "react-icons/md";
 import "./UserManagement.scss";
-import Modal from "../Modal/Modal";
 import { DeleteIcon } from "../../../utils/Icon/DeleteIcon";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
