@@ -3,7 +3,6 @@ import NavBar from "../NavBar/NavBar";
 import DataTable from "react-data-table-component";
 import { MdModeEdit } from "react-icons/md";
 import "./UserManagement.scss";
-import Modal from "../Modal/Modal";
 import { DeleteIcon } from "../../../utils/Icon/DeleteIcon";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -145,16 +144,6 @@ export default function UserManagement() {
             >
               Add User
             </button>
-            {modalOpen && (
-              <Modal
-                success={success}
-                errors={errors}
-                closeModal={() => {
-                  setModalOpen(false);
-                }}
-                onSubmit={handleSubmit}
-              />
-            )}
           </div>
         </div>
         <div className="table mt-3">
