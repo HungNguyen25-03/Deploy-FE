@@ -7,6 +7,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Select from "react-select";
 
 const ENDPOINT = "staff/uploads";
 
@@ -46,33 +47,71 @@ export default function EditPost() {
   const { id } = useParams();
   const { auth } = useAuth();
   const nav = useNavigate();
-  const [post, setPost] = useState({
-    post_id: "",
-    title: "",
-    description: "",
-    image_url: "",
-    post_date: "",
-  });
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState("");
+  const [product, setProduct] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState([]);
 
   useEffect(() => {
     axios
       .get(`${MainAPI}/user/get-post/${id}`)
       .then((res) => {
         console.log(res.data);
-        setPost(res.data);
+        setTitle(res.data.title);
+        setDescription(res.data.description);
+        setImage(res.data.image_url);
+        setSelectedOptions(
+          res.data.products.map((product) => {
+            return { value: product.product_id, label: product.product_name };
+          })
+        );
+        fetchData(); // pass the test array to fetchData
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
 
-  const handleEditPost = () => {
+  const fetchData = () => {
     axios
-      .put(`${MainAPI}/staff/update-post/${id}`, post, {
+      .get(`${MainAPI}/staff/get-product-for-post`, {
         headers: {
           "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
         },
       })
+      .then((res) => {
+        // console.log(res.data);
+        setProduct(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const handleChange = (selectedOption) => {
+    setSelectedOptions(selectedOption);
+  };
+
+  const handleEditPost = () => {
+    axios
+      .put(
+        `${MainAPI}/staff/update-post/${id}`,
+        {
+          title: title,
+          description: description,
+          image_url: image,
+          user_id: auth.user.user_id,
+          productItems: selectedOptions.map((product) => {
+            return product.value;
+          }),
+        },
+        {
+          headers: {
+            "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
+          },
+        }
+      )
       .then((res) => {
         console.log(res);
         toast.success(res.data.message);
@@ -85,51 +124,65 @@ export default function EditPost() {
       });
   };
 
-  console.log(post);
+  console.log(selectedOptions);
+  // console.log(title);
+  // console.log(description);
+  // console.log(image);
 
   return (
     <div className="create-post-container">
       <ToastContainer />
       <div className="create-post-content">
         <h2 className="mb-3 mt-3">Edit Post</h2>
-        <form class="row g-3">
-          <div class="mb-3">
+        <form className="row g-3">
+          <div className="mb-3">
             <input
               type="email"
-              class="form-control"
+              className="form-control"
               placeholder="Post title"
               name="title"
-              value={post.title}
+              value={title}
               onChange={(e) => {
-                setPost({ ...post, title: e.target.value });
+                setTitle(e.target.value);
               }}
             />
           </div>
-          <div class="mb-3">
+          <div className="mb-3">
             <input
-              class="form-control"
+              className="form-control"
               placeholder="Thumbnail Image URL"
               name="image_url"
-              value={post.image_url}
+              value={image}
               onChange={(e) => {
-                setPost({ ...post, image_url: e.target.value });
+                setImage(e.target.value);
               }}
             ></input>
           </div>
         </form>
+        <div style={{ marginBottom: "30px" }}>
+          <Select
+            defaultValue={selectedOptions}
+            options={product}
+            onChange={handleChange}
+            value={selectedOptions}
+            isMulti={true}
+            className="basic-multi-select"
+            classNamePrefix="select"
+          />
+        </div>
         <CKEditor
           config={{
             extraPlugins: [uploadPlugin],
           }}
           editor={ClassicEditor}
-          data={post.description}
+          data={description}
           onReady={(editor) => {
             // You can store the "editor" and use when it is needed.
             console.log("Editor is ready to use!", editor);
           }}
           onChange={(event, editor) => {
             const data = editor.getData();
-            setPost({ ...post, description: data });
+            setDescription(data);
             // console.log(data);
           }}
           onBlur={(event, editor) => {

@@ -9,12 +9,12 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { MainAPI } from "../API";
 import { Link, useParams } from "react-router-dom";
+import { Spinner } from "react-bootstrap";
 
 export default function ProductListShow({
   productList,
   changePage,
   totalPage,
-  isBrandPage,
 }) {
   const { handleAddToCart } = useContext(CartContext);
   const [ageFilters, setAgeFilters] = useState([]);
@@ -26,13 +26,15 @@ export default function ProductListShow({
   const [filterPage, setFilterPage] = useState(0);
   const itemsPerPage = 12;
   const { brand_name } = useParams();
-  console.log(totalPage);
+  const [loading, setLoading] = useState(true);
+  const quantity = 1;
 
   useEffect(() => {
     axios
       .get(`${MainAPI}/product/getAllProductWithoutPagination`)
       .then((res) => {
         setProductListAll(res.data.inStockProducts);
+        setLoading(false);
         // console.log(res.data.inStockProducts);
       })
       .catch((err) => console.log(err));
@@ -67,7 +69,7 @@ export default function ProductListShow({
             ...res.data.outOfStockProducts,
           ]);
           setFilterPage(res.data.totalPages);
-          // setCurrentPage(1);
+          setLoading(false);
         } else {
           setFilteredItems([]);
         }
@@ -77,11 +79,6 @@ export default function ProductListShow({
       });
   };
 
-  // useEffect(() => {}, [ageFilters, countryFilters, currentPage]);
-  // console.log(filteredItems);
-
-  // console.log(productList);
-
   //SET TOTAL PAGE
   useEffect(() => {
     if (ageFilters.length > 0 || countryFilters.length > 0) {
@@ -90,14 +87,7 @@ export default function ProductListShow({
     } else {
       setTotalPageAll(totalPage);
     }
-    // if (filteredItems.length > 0) {
-    //   setTotalPageAll(filterPage);
-    // } else {
-    //   setTotalPageAll(totalPage);
-    // }
   }, [totalPage, filterPage, ageFilters, countryFilters, currentPage]);
-
-  console.log(totalPageAll);
 
   const totalPages = totalPageAll;
 
@@ -126,9 +116,8 @@ export default function ProductListShow({
                         setCountryFilters
                       );
                     }}
-                    className={`btn ${
-                      countryFilters?.includes(cate.country) ? "active" : ""
-                    }`}
+                    className={`btn ${countryFilters?.includes(cate.country) ? "active" : ""
+                      }`}
                     key={`filters-${index}`}
                   >
                     {cate.title}
@@ -150,9 +139,8 @@ export default function ProductListShow({
                         setAgeFilters
                       );
                     }}
-                    className={`btn ${
-                      ageFilters?.includes(age.title) ? "active" : ""
-                    }`}
+                    className={`btn ${ageFilters?.includes(age.title) ? "active" : ""
+                      }`}
                     key={`filters-${index}`}
                   >
                     {age.title}
@@ -165,100 +153,117 @@ export default function ProductListShow({
       </>
 
       <div className="product_detail text-center d-flex flex-column">
-        <div className="row row-cols-4 cardRow">
-          {ageFilters.length > 0 || countryFilters.length > 0 ? (
-            <>
-              {filteredItems.map((product) => (
-                <div key={product.product_id} className="product-card col">
-                  <Link
-                    className="product-detail-link"
-                    to={`/home/ProductDetail/${product.product_id}`}
-                  >
-                    <div className="home-product-detail-img-container">
-                      <img src={product.image_url} alt={product.title} />
+        {loading ? (
+          <>
+            <div className="text-center">
+              <Spinner animation="border" role="status" />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="row row-cols-4 cardRow">
+              {ageFilters.length > 0 || countryFilters.length > 0 ? (
+                <>
+                  {filteredItems.map((product) => (
+                    <div key={product.product_id} className="product-card col">
+                      <Link
+                        className="product-detail-link"
+                        to={`/home/ProductDetail/${product.product_id}`}
+                      >
+                        <div className="home-product-detail-img-container">
+                          <img src={product.image_url} alt={product.title} />
+                        </div>
+                        <div className="mt-2">{product.product_name}</div>
+                        <div>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span style={{ fontSize: "10px" }}>
+                            {product.sale}
+                          </span>
+                        </div>
+                      </Link>
+                      <div
+                        style={{
+                          display: "flex",
+                          marginTop: "10px",
+                          justifyContent: "space-around",
+                        }}
+                      >
+                        <div>{formatVND(product.price)}</div>
+                        <div
+                          className="icon_cart"
+                          onClick={() => handleAddToCart({ ...product, quantity })}
+                        >
+                          <FaShoppingCart />
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-2">{product.product_name}</div>
-                    <div>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span style={{ fontSize: "10px" }}>{product.sale}</span>
+                  ))}
+                </>
+              ) : (
+                <>
+                  {productList.map((product) => (
+                    <div key={product.product_id} className="product-card col">
+                      <Link
+                        className={
+                          product.stock <= 0
+                            ? "sold-out"
+                            : "product-detail-link"
+                        }
+                        to={`/home/ProductDetail/${product.product_id}`}
+                      >
+                        <div className="home-product-detail-img-container">
+                          <img src={product.image_url} alt={product.title} />
+                          {product.stock <= 0 && (
+                            <button className="sold-out-button">
+                              Sold Out
+                            </button>
+                          )}
+                        </div>
+                        <div className="mt-2">{product.product_name}</div>
+                        <div>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span className="star">★</span>
+                          <span style={{ fontSize: "10px" }}>
+                            {product.sale}
+                          </span>
+                        </div>
+                      </Link>
+                      <div
+                        style={{
+                          display: "flex",
+                          marginTop: "10px",
+                          justifyContent: "space-around",
+                        }}
+                      >
+                        <div>{formatVND(product.price)}</div>
+                        <div
+                          className="icon_cart"
+                          onClick={() => handleAddToCart({ ...product, quantity })}
+                        >
+                          <FaShoppingCart />
+                        </div>
+                      </div>
                     </div>
-                  </Link>
-                  <div
-                    style={{
-                      display: "flex",
-                      marginTop: "10px",
-                      justifyContent: "space-around",
-                    }}
-                  >
-                    <div>{formatVND(product.price)}</div>
-                    <div
-                      className="icon_cart"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <FaShoppingCart />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          ) : (
-            <>
-              {productList.map((product) => (
-                <div key={product.product_id} className="product-card col">
-                  <Link
-                    className={
-                      product.stock <= 0 ? "sold-out" : "product-detail-link"
-                    }
-                    to={`/home/ProductDetail/${product.product_id}`}
-                  >
-                    <div className="home-product-detail-img-container">
-                      <img src={product.image_url} alt={product.title} />
-                      {product.stock <= 0 && (
-                        <button className="sold-out-button">Sold Out</button>
-                      )}
-                    </div>
-                    <div className="mt-2">{product.product_name}</div>
-                    <div>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span className="star">★</span>
-                      <span style={{ fontSize: "10px" }}>{product.sale}</span>
-                    </div>
-                  </Link>
-                  <div
-                    style={{
-                      display: "flex",
-                      marginTop: "10px",
-                      justifyContent: "space-around",
-                    }}
-                  >
-                    <div>{formatVND(product.price)}</div>
-                    <div
-                      className="icon_cart"
-                      onClick={() => handleAddToCart(product)}
-                    >
-                      <FaShoppingCart />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-        </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </>
+        )}
         <div className="pagination">
           {Array.from({ length: totalPages }, (_, index) => (
             <button
               key={index}
               onClick={() => handlePageChange(index + 1)}
-              className={`pagination-button ${
-                index + 1 === currentPage ? "active" : ""
-              }`}
+              className={`pagination-button ${index + 1 === currentPage ? "active" : ""
+                }`}
             >
               {index + 1}
             </button>

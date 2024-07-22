@@ -18,7 +18,7 @@ export default function ConfirmOrder() {
       case "pending":
         return "status-pending";
       case "delivered":
-        return "status-delivery";
+        return "status-delivered";
       case "confirmed":
         return "status-confirm";
       case "paid":
@@ -147,12 +147,14 @@ export default function ConfirmOrder() {
                     <button
                       className="action-btn-confirm"
                       onClick={() => handleSetConfirm(confirm)}
+                      title="Xác nhận"
                     >
                       <IoMdCheckbox color="green" size="25px" />
                     </button>
                     <button
                       className="action-btn-cancel"
                       onClick={() => handleSetCancel(confirm)}
+                      title="Hủy"
                     >
                       <FaWindowClose color="red" size="22px" />
                     </button>

@@ -3,6 +3,7 @@ import "./Voucher.scss";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MainAPI } from "../../API";
+import { convertSQLDate } from "../../../utils/Format";
 
 export default function ManageVoucher() {
   const [vouchers, setVouchers] = useState([]);
@@ -21,7 +22,10 @@ export default function ManageVoucher() {
         if (!res.ok) throw new Error("Failed to fetch data get voucher");
         return res.json();
       })
-      .then((data) => setVouchers(data))
+      .then((data) => {
+        console.log(data);
+        setVouchers(data);
+      })
       .catch((error) => {
         console.error("Error fetching data voucher:", error);
       });
@@ -44,91 +48,103 @@ export default function ManageVoucher() {
       }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to add voucher");
+        if (!res.ok) {
+          // console.log(res.json());
+          return res.json();
+        }
         return res.json();
       })
       .then((data) => {
         console.log(data);
-        fetchData();
-        setShowAdd(false);
-        setExDate("");
-        setDiscount("");
-        toast.success("Voucher added successfully");
-        console.log("Voucher added successfully");
+        if (data.status === 200) {
+          fetchData();
+          setShowAdd(false);
+          setExDate("");
+          setDiscount("");
+          toast.success("Voucher added successfully");
+          console.log("Voucher added successfully");
+        } else {
+          toast.error(data.errors[0].message);
+        }
       })
       .catch((error) => {
         console.error("Error adding voucher:", error);
       });
   };
 
+  console.log(vouchers);
+
   return (
-    <div className="voucher">
+    <>
       <ToastContainer />
       <div className="create-voucher-btn">
-        <button
+        <button className="btn btn-primary"
           style={{
             border: "none",
             borderRadius: "20px",
-            marginRight: "20px",
-            marginTop: "20px",
-            backgroundColor: "#00CCFF",
+            marginTop: "5%",
+            marginBottom: "5px",
           }}
           onClick={() => setShowAdd(true)}
         >
           Create Voucher
         </button>
       </div>
-      {showAdd && (
-        <div className="add-voucher" style={{ marginLeft: "10px" }}>
-          <div className="add-voucher-detail">
-            <h4>Create Voucher</h4>
-            <label className="code-dis">Discount (%):</label>
-            <input
-              type="number"
-              value={discount}
-              onChange={(event) => setDiscount(event.target.value)}
-            />
-            <label>Expiration Date:</label>
-            <input
-              type="date"
-              value={exDate}
-              onChange={(event) => setExDate(event.target.value)}
-            />
-            <button className="add-cancel" onClick={handleAddVoucher}>
-              Create
-            </button>
-            <button className="add-cancel" onClick={() => setShowAdd(false)}>
-              Cancel
-            </button>
+      <div className="voucher">
+        {showAdd && (
+          <div className="add-voucher" style={{ marginLeft: "10px", textAlign: 'left' }}>
+            <div className="add-voucher-detail">
+              <h4 style={{ marginLeft: '10px' }}>Create Voucher</h4>
+              <label className="code-dis">Discount (%):</label>
+              <input
+                type="number"
+                value={discount}
+                onChange={(event) => setDiscount(event.target.value)}
+              />&nbsp;&nbsp;&nbsp;
+              <label>Expiration Date:</label>
+              <input
+                type="date"
+                value={exDate}
+                onChange={(event) => setExDate(event.target.value)}
+              />&nbsp;&nbsp;&nbsp;
+              <button className="add-cancel" onClick={handleAddVoucher}>
+                Create
+              </button>
+              <button className="add-cancel" onClick={() => setShowAdd(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="voucher-th">
-        <table className="table-voucher-th">
-          <thead>
-            <tr>
-              <th>Voucher ID</th>
-              <th>Code</th>
-              <th>Discount</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-
-      <div className="voucher-tb">
-        <table className="table-voucher-tb">
-          <tbody>
-            {vouchers.map((voucher, index) => (
-              <tr key={index}>
-                <td>{voucher.voucher_id}</td>
-                <td>{voucher.code}</td>
-                <td>{voucher.discount}%</td>
+        <div className="voucher-th">
+          <table className="table-voucher-th">
+            <thead>
+              <tr>
+                <th>Voucher ID</th>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Expiration_date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+          </table>
+        </div>
+
+        <div className="voucher-tb">
+          <table className="table-voucher-tb">
+            <tbody>
+              {vouchers.map((voucher, index) => (
+                <tr key={index}>
+                  <td>{voucher.voucher_id}</td>
+                  <td>{voucher.code}</td>
+                  <td>{voucher.discount}%</td>
+                  <td>{convertSQLDate(voucher.expiration_date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

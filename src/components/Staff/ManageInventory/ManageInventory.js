@@ -1,22 +1,29 @@
 import React, { useEffect, useState } from "react";
 import "./Inventory.scss";
 import { BsJournalCheck } from "react-icons/bs";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdDeleteOutline, MdOutlineInventory } from "react-icons/md";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { MainAPI } from "../../API";
-import { formatVND } from "../../../utils/Format";
+import { useNavigate } from "react-router-dom";
+import DataTable from "react-data-table-component";
+import Modal from "react-modal";
+import { convertSQLDate } from "../../../utils/Format";
+
+Modal.setAppElement("#root");
 
 export default function ManageInventory() {
   const [inventory, setInventory] = useState([]);
-  const [actionVisible, setActionVisible] = useState(null);
-  const [showEditProduct, setShowEditProduct] = useState(false);
-  const [proName, setProName] = useState("");
-  const [price, setPrice] = useState("");
-  const [stock, setStock] = useState("");
-  const [img, setImg] = useState("");
-  const [editProductId, setEditProductId] = useState(null);
-  const [showAdd, setShowAdd] = useState(false);
+  const [proDetails, setProDetails] = useState([]);
+  const nav = useNavigate();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [visible, setVisible] = useState(null);
+  const [proDate, setProDate] = useState("");
+  const [exDate, setExDate] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [proID, setProID] = useState("");
+  const [show, setShow] = useState(false);
 
   const fetchData = () => {
     fetch(`${MainAPI}/staff/product`, {
@@ -26,312 +33,384 @@ export default function ManageInventory() {
       },
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch data get product");
+        if (!res.ok) throw new Error("Failed to fetch data");
         return res.json();
       })
       .then((data) => setInventory(data))
-      .catch((error) => console.error("Error fetching data product:", error));
+      .catch((error) => console.error("Error fetching data:", error));
+  };
+
+  const fetchDataDetail = (id) => {
+    fetch(`${MainAPI}/staff/show-product-details/${id}`, {
+      method: "GET",
+      headers: {
+        "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
+      },
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch product details");
+        return res.json();
+      })
+      .then((data) => setProDetails(data))
+      .catch((error) => console.error("Error fetching product details:", error));
   };
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  console.log(inventory);
-
-  const handleActionClick = (index) => {
-    setActionVisible(actionVisible === index ? null : index);
-  };
-
   const handleEditProductClick = (product) => {
-    setEditProductId(product.product_id);
-    console.log(product.product_id);
-    setProName(product.product_name);
-    setPrice(product.price);
-    setStock(product.stock);
-    setImg(product.image_url);
-    setShowEditProduct(true);
+    nav(`/edit-product/${product.product_id}`);
   };
 
-  const handleUpdateProduct = () => {
-    if (!editProductId) return;
+  const handleDeleteExpProduct = () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete all expired product?"
+    );
 
-    console.log(editProductId);
+    if (confirmed) {
+      handleConfirmDelete();
+    }
+  };
 
-    fetch(`${MainAPI}/staff/update-product/${editProductId}`, {
+  const handleDeleteEachProduct = (id) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete product?"
+    );
+
+    if (confirmed) {
+      handleDeleteProduct(id);
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    try {
+      const response = await fetch(`${MainAPI}/staff/export/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200) {
+        toast.success("Delete product successfully");
+        fetchData();
+      } else {
+        toast.error(data.errors[0].message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await fetch(`${MainAPI}/staff/delete-expired-product`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.status === 200) {
+        toast.success("Delete all expired product successfully");
+        fetchData();
+      } else {
+        toast.error(data.errors[0].message);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditDetail = (product) => {
+    setSelectedProduct(product);
+    setShowModal(true);
+    setProID(product.product_id);
+    fetchDataDetail(product.product_id);
+  };
+
+  const handleAdd = (id) => {
+    console.log(id)
+    fetch(`${MainAPI}/staff/add-product-details/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
       },
       body: JSON.stringify({
-        product_name: proName,
-        image_url: img,
-        price: price,
-        stock: stock,
+        product_id: id,
+        production_date: proDate,
+        expiration_date: exDate,
+        quantity: quantity,
       }),
     })
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to update product");
+        if (!res.ok) {
+          return res.json();
+        }
         return res.json();
       })
       .then((data) => {
         console.log(data);
-        toast.success("Product updated successfully");
-        fetchData();
-        setShowEditProduct(false);
-        setProName("");
-        setPrice("");
-        setStock("");
-        setImg("");
-        setEditProductId(null);
+        if (data.status === 200) {
+          setProID("");
+          setExDate("");
+          setProDate("");
+          setQuantity("");
+          setShow(false);
+          fetchDataDetail(proID);
+          toast.success("Quantity added successfully");
+          console.log("Quantity added successfully");
+        } else {
+          toast.error(data.errors[0].message);
+        }
       })
-      .catch((error) => console.error("Error updating product:", error));
-  };
-
-  const handleDelete = async (productId) => {
-    console.log(`Delete product with ID: ${productId}`);
-    try {
-      const data = await fetch(`${MainAPI}/staff/export/${productId}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
-        },
-      }).then((response) => {
-        //   if (!response.ok) throw new Error("Failed to delete product");
-        return response.json();
+      .catch((error) => {
+        console.error("Error adding Quantity:", error);
       });
-      if (data.status === 200) {
-        toast.success("Product deleted successfully");
-        fetchData();
-      } else {
-        toast.error(data.errors[0].message);
-      }
-      console.log(data);
-    } catch (err) {
-      console.log(err);
-    }
   };
 
-  const handleAddProduct = () => {
-    fetch(`${MainAPI}/staff/add-product`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
+  const columns = [
+    {
+      name: "Product ID",
+      selector: (row) => row.product_id,
+      sortable: true,
+      center: true,
+      wrap: true,
+      style: {
+        fontSize: "12px",
+        textAlign: "center",
       },
-      body: JSON.stringify({
-        product_name: proName,
-        image_url: img,
-        price: price,
-        stock: stock,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to add product");
-        return res.json();
-      })
-      .then((data) => {
-        console.log(data);
-        fetchData();
-        setProName("");
-        setPrice("");
-        setStock("");
-        setImg("");
-        setShowAdd(false);
-        toast.success("Product added successfully");
-      })
-      .catch((error) => console.error("Error adding product:", error));
+    },
+    {
+      name: "Brand",
+      selector: (row) => row.brand_name,
+      sortable: true,
+      center: true,
+      wrap: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      name: "Image",
+      cell: (row) => (
+        <img
+          src={row.image_url}
+          alt="Product"
+          style={{ width: "55px", height: "70px" }}
+        />
+      ),
+      center: true,
+    },
+    {
+      name: "Product",
+      selector: (row) => row.product_name,
+      sortable: true,
+      center: true,
+      wrap: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      name: "Price",
+      selector: (row) => row.price,
+      sortable: true,
+      center: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      name: "Country ID",
+      selector: (row) => row.country_id,
+      sortable: true,
+      center: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      name: "Description",
+      selector: (row) => row.description,
+      sortable: true,
+      center: true,
+      wrap: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      name: "Age Range",
+      selector: (row) => row.age_range,
+      sortable: true,
+      center: true,
+      wrap: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      name: "Stock",
+      selector: (row) => row.stock,
+      sortable: true,
+      center: true,
+      style: { fontSize: "12px", textAlign: "center" },
+    },
+    {
+      cell: (row) => (
+        <div className="action">
+          <button title="Chỉnh sửa sản phẩm" className="icon_btn" onClick={() => handleEditProductClick(row)}>
+            <BsJournalCheck color="green" />
+          </button>
+          <button title="Xem chi tiết sản phẩm" className="icon_btn" onClick={() => handleEditDetail(row)}>
+            <MdOutlineInventory color="#0066cc" fontSize="16px" />
+          </button>
+          <button title="Xóa sản phẩm" className="icon_btn" onClick={() => handleDeleteEachProduct(row.product_id)}>
+            <MdDeleteOutline color="red" fontSize="17px" />
+          </button>
+        </div>
+      ),
+      center: true,
+    },
+  ];
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
   };
 
-  const handleCancelAddProduct = () => {
-    setProName("");
-    setPrice("");
-    setStock("");
-    setImg("");
-    setShowAdd(false);
-  }
-  const handleCancelEditProduct = () => {
-    setProName("");
-    setPrice("");
-    setStock("");
-    setImg("");
-    setShowEditProduct(false)
+  const customStyles = {
+    content: {
+      top: '50%',
+      left: '50%',
+      right: 'auto',
+      bottom: 'auto',
+      marginRight: '-50%',
+      transform: 'translate(-50%, -50%)',
+      width: '650px',
+      height: '400px',
+    },
+  };
+
+  const handleCancel = () => {
+    setProID("");
+    setExDate("");
+    setProDate("");
+    setQuantity("");
+    setShow(false);
   }
 
   return (
-    <div className="inventory">
+    <>
       <ToastContainer />
-      <div className="create-inventory-btn">
-        <button className="btn btn-primary"
-          style={{
-            border: "none",
-            borderRadius: "20px",
-            marginRight: "20px",
-            marginTop: "20px",
+      <div className="manage-inventory-container">
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            nav("/create-product");
           }}
-          onClick={() => setShowAdd(true)}
         >
-          Add New Product
+          Add Product
         </button>
-      </div>
-      {showAdd && (
-        <div className="add-voucher" style={{ marginLeft: "10px" }}>
-          <div className="add-voucvher-detail">
-            <h4>Add New Product</h4>
-            <div>
-              <label>Image URL:</label>
-              <input
-                type="text"
-                value={img}
-                style={{ width: "80%", marginBottom: '5px' }}
-                onChange={(event) => setImg(event.target.value)}
-              />
-            </div>
-            <label>Product Name:</label>
-            <input
-              type="text"
-              value={proName}
-              onChange={(event) => setProName(event.target.value)}
-            />
-            <label style={{ marginLeft: "10px" }}>Price:</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(event) => setPrice(event.target.value)}
-            />
-            <label style={{ marginLeft: "10px" }}>Stock:</label>
-            <input
-              type="number"
-              value={stock}
-              onChange={(event) => setStock(event.target.value)}
-            />
-            <button className="add-cancel" onClick={handleAddProduct}>
-              Add
-            </button>
-            <button className="add-cancel"
-              // onClick={() => setShowAdd(false)}
-              onClick={() => handleCancelAddProduct()}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-      {showEditProduct && (
-        <div className="edit-voucher" style={{ marginLeft: "10px" }}>
-          <div className="edit-voucvher-detail">
-            <h4>Edit Product</h4>
-            <div>
-              <label>Image URL:</label>
-              <input
-                type="text"
-                value={img}
-                style={{ width: "80%", marginBottom: '5px' }}
-                onChange={(event) => setImg(event.target.value)}
-              />
-            </div>
-            <label>Product Name:</label>
-            <input
-              type="text"
-              value={proName}
-              onChange={(event) => setProName(event.target.value)}
-            />
-            <label style={{ marginLeft: "10px" }}>Price:</label>
-            <input
-              type="number"
-              value={price}
-              onChange={(event) => setPrice(event.target.value)}
-            />
-            <label style={{ marginLeft: "10px" }}>Stock:</label>
-            <input
-              type="number"
-              value={stock}
-              onChange={(event) => setStock(event.target.value)}
-            />
-            <button className="add-cancel" onClick={handleUpdateProduct}>
-              Update
-            </button>
-            <button
-              className="add-cancel"
-              // onClick={() => setShowEditProduct(false)}
-              onClick={() => handleCancelEditProduct()}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-      <div className="inventory-th">
-        <table className="table-inventory-th">
-          <thead>
-            <tr>
-              <th>Product ID</th>
-              <th>Image</th>
-              <th>Product Name</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
 
-      <div className="inventory-tb">
-        <table className="table-inventory-tb">
-          <tbody>
-            {inventory.map((invent, index) => (
-              <tr key={index}>
-                <td style={{ padding: "10px" }}>{invent.product_id}</td>
-                <td style={{ textAlign: 'center' }}>
-                  <div style={{ width: '90px', height: '120px', marginLeft: '9%' }}>
-                    <img style={{ width: '100%', height: '100%' }} src={invent.image_url} alt={invent.image_url} />
-                  </div>
-                </td>
-                <td>{invent.product_name}</td>
-                <td>{formatVND(invent.price)}</td>
-                <td>{invent.stock}</td>
-                <td>
-                  <button
-                    className="action-btn"
-                    onClick={() => handleActionClick(index)}
-                  >
-                    ▪▪▪
-                  </button>
-                  {actionVisible === index && (
-                    <div className="action-menu" style={{ marginTop: '10px' }}>
-                      <button className="icon_btn"
-                        style={{
-                          border: "none",
-                          backgroundColor: "none",
-                          borderRadius: "20px",
-                        }}
-                        onClick={() => handleEditProductClick(invent)}
-                      >
-                        <BsJournalCheck color="green" />
-                      </button>
+        <button
+          className="btn btn-danger" style={{ marginLeft: "20px" }}
+          onClick={() => handleDeleteExpProduct()}
+        >
+          Delete Expired Product
+        </button>
 
-                      <button className="icon_btn"
-                        style={{
-                          border: "none",
-                          backgroundColor: "none",
-                          borderRadius: "20px",
-                          marginLeft: "10px",
-                          fontSize: "16px",
-                        }}
-                        onClick={() => handleDelete(invent.product_id)}
-                      >
-                        <MdDeleteOutline color="red" />
-                      </button>
-                    </div>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-post">
+          <DataTable
+            pagination
+            paginationPerPage={4}
+            paginationRowsPerPageOptions={[4, 6]}
+            columns={columns}
+            data={inventory}
+            className="table-content"
+          />
+        </div>
       </div>
-    </div>
+      {showModal && selectedProduct && (
+        <Modal
+          isOpen={showModal}
+          onRequestClose={closeModal}
+          contentLabel="Edit Product"
+          style={customStyles}
+        >
+          <h2>Product Detail</h2>
+
+          <button className="btn btn-primary" onClick={() => setShow(true)}>
+            Add Quantity
+          </button>
+
+          {
+            show && (
+              <div >
+                <h4>Add quantity product</h4>
+                <div style={{ marginBottom: '10px' }}>
+                  <label>Quantity:</label>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(event) => setQuantity(event.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label>Production Date:</label>
+                  <input
+                    type="date"
+                    value={proDate}
+                    onChange={(event) => setProDate(event.target.value)}
+                  />
+                  <label>Expiration Date:</label>
+                  <input
+                    type="date"
+                    value={exDate}
+                    onChange={(event) => setExDate(event.target.value)}
+                  />
+                </div>
+
+                <button className="btn btn-primary" style={{ marginTop: "10px" }} onClick={() => handleAdd(proID)}>
+                  Create
+                </button>
+                <button className="btn btn-danger" style={{ marginTop: "10px", marginLeft: '20px' }} onClick={() => handleCancel()}>
+                  Cancel
+                </button>
+              </div>
+            )
+          }
+
+
+          <div>
+            <table className="table-prodetail-th">
+              <thead>
+                <tr>
+                  <th>Production Date</th>
+                  <th>Expiry Date</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+            </table>
+
+            <div className="prodetail-tb">
+              <table className="table-prodetail-tb">
+                <tbody>
+                  {proDetails.map((product, index) => (
+                    <tr key={index}>
+                      <td>{convertSQLDate(product.production_date)}</td>
+                      <td>{convertSQLDate(product.expiration_date)}</td>
+                      <td>{product.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <button style={{ marginTop: '20px' }} onClick={closeModal} className="btn btn-secondary">
+            Close
+          </button>
+        </Modal >
+      )
+      }
+    </>
   );
 }

@@ -14,9 +14,6 @@ export default function UserManagement() {
   const nav = useNavigate();
   const [data, setData] = useState([]);
   const [records, setRecords] = useState(data);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [errors, setErrors] = useState([]);
-  const [success, setSuccess] = useState(false);
 
   async function fetchData() {
     const response = await fetch(`${MainAPI}/admin/allUsers`, {
@@ -36,16 +33,6 @@ export default function UserManagement() {
     fetchData();
   }, []);
 
-  function handleFilter(event) {
-    const newData = records.filter((record) => {
-      return record.username
-        .toLowerCase()
-        .includes(event.target.value.toLowerCase());
-    });
-    setRecords(newData);
-    fetchData();
-  }
-
   function handleDelete(id) {
     try {
       axios
@@ -61,27 +48,6 @@ export default function UserManagement() {
     } catch (err) {
       console.log(err);
     }
-  }
-
-  function handleSubmit(newUser) {
-    axios
-      .post("http://localhost:4000/admin/create", newUser, {
-        headers: {
-          "x-access-token": JSON.parse(localStorage.getItem("accessToken")),
-        },
-      })
-      .then((res) => {
-        if (res.status === 200) {
-          fetchData();
-          setSuccess(true);
-          toast.success(res.data.message);
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-        setErrors(err.response.data.errors);
-        setSuccess(false);
-      });
   }
 
   const column = [
@@ -152,6 +118,7 @@ export default function UserManagement() {
             data={records}
             selectableRows
             pagination
+            paginationPerPage={5}
             paginationRowsPerPageOptions={[5, 10]}
             className="table-content"
           />

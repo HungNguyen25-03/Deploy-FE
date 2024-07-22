@@ -41,16 +41,16 @@ export const options = {
 export default function Chart({ startDate, endDate }) {
   const [dataChart, setDataChart] = useState({});
   const [topProducts, setTopProducts] = useState([]);
-  const [totalRevenuePerMonth, setTotalRevenuePerMonth] = useState([]);
+  const [totalRevenuePerPeriod, setTotalRevenuePerPeriod] = useState([]);
 
-  const barChartLabels = totalRevenuePerMonth.map(
-    (revenue) => revenue.yearMonth
+  const barChartLabels = totalRevenuePerPeriod.map(
+    (revenue) => revenue.periodMonth
   );
-  const barChartData = totalRevenuePerMonth.map(
+  const barChartData = totalRevenuePerPeriod.map(
     (revenue) => revenue.totalRevenue
   );
 
-  console.log(barChartData);
+  // console.log(barChartData);
   useEffect(() => {
     axios
       .get(`${MainAPI}/admin/dashboard`, {
@@ -66,7 +66,7 @@ export default function Chart({ startDate, endDate }) {
         // console.log(res.data);
         setDataChart(res.data);
         setTopProducts(res.data.topProducts);
-        setTotalRevenuePerMonth(res.data.totalRevenuePerMonth);
+        setTotalRevenuePerPeriod(res.data.totalRevenuePerPeriod);
       })
       .catch((err) => {
         console.log(err);
@@ -80,7 +80,7 @@ export default function Chart({ startDate, endDate }) {
       {
         label: "Doanh thu theo tháng",
         data: barChartLabels.map((__, index) => barChartData[index]),
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
       },
     ],
   };
@@ -114,13 +114,13 @@ export default function Chart({ startDate, endDate }) {
   return (
     <>
       <div className="row-chart">
-        <div className="chart-col-vertical col-8">
+        <div className="chart-col-vertical col-md-8">
           <p className="fw-bold m-0">Tổng doanh thu</p>
           <div className="chart">
             <Bar options={options} data={dataBarChart} />
           </div>
         </div>
-        <div className="chart-col-pie col-4">
+        <div className="chart-col-pie col-md-4">
           <p className="fw-bold m-0">Top sản phẩm đã bán</p>
           <div className="chart">
             <Pie data={dataPieChart} />
