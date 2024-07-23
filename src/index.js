@@ -6,18 +6,19 @@ import reportWebVitals from "./reportWebVitals";
 import { AuthProvider } from "./context/AuthProvider";
 import { CartProvider } from "./components/Cart/CartContext";
 import { OrderProvider } from "./context/OrderProvider";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  // <React.StrictMode>
-  <AuthProvider>
-    <CartProvider>
-      <OrderProvider>
-        <App />
-      </OrderProvider>
-    </CartProvider>
-  </AuthProvider>
-  // {/* </React.StrictMode> */}
+  <React.StrictMode>
+    <AuthProvider>
+      <CartProvider>
+        <OrderProvider>
+          <App />
+        </OrderProvider>
+      </CartProvider>
+    </AuthProvider>
+  </React.StrictMode>
 );
 
 reportWebVitals();

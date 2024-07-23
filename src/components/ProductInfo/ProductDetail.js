@@ -7,6 +7,7 @@ import FooterPage from "../../utils/Footer/FooterPage";
 import axios from "axios";
 import { MainAPI } from "../API";
 import Review from "./Reviews/Review";
+import useScrollToTop from "../../hooks/ScrollToTop";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -21,7 +22,10 @@ export default function ProductDetail() {
         setProduct(res.data);
       })
       .catch((err) => console.log(err));
-  }, [id]);
+  }, []);
+
+
+  useScrollToTop();
 
   return (
     <div>
