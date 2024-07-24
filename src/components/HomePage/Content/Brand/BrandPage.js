@@ -43,7 +43,7 @@ export default function BrandPage() {
       <div
         className="container d-flex align-items-center justify-content-center"
         style={{
-          marginTop: "90px",
+          marginTop: "80px",
           justifyContent: "center",
         }}
       >
