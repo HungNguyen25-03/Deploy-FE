@@ -60,7 +60,9 @@ export default function ManageInventory() {
         return res.json();
       })
       .then((data) => setProDetails(data))
-      .catch((error) => console.error("Error fetching product details:", error));
+      .catch((error) =>
+        console.error("Error fetching product details:", error)
+      );
   };
 
   useEffect(() => {
@@ -145,7 +147,7 @@ export default function ManageInventory() {
   };
 
   const handleAdd = (id) => {
-    console.log(id)
+    console.log(id);
     fetch(`${MainAPI}/staff/add-product-details/${id}`, {
       method: "PUT",
       headers: {
@@ -168,7 +170,6 @@ export default function ManageInventory() {
       .then((data) => {
         console.log(data);
         if (data.status === 200) {
-          setProID("");
           setExDate("");
           setProDate("");
           setQuantity("");
@@ -264,13 +265,25 @@ export default function ManageInventory() {
     {
       cell: (row) => (
         <div className="action">
-          <button title="Chỉnh sửa sản phẩm" className="icon_btn" onClick={() => handleEditProductClick(row)}>
+          <button
+            title="Chỉnh sửa sản phẩm"
+            className="icon_btn"
+            onClick={() => handleEditProductClick(row)}
+          >
             <BsJournalCheck color="green" />
           </button>
-          <button title="Xem chi tiết sản phẩm" className="icon_btn" onClick={() => handleEditDetail(row)}>
+          <button
+            title="Xem chi tiết sản phẩm"
+            className="icon_btn"
+            onClick={() => handleEditDetail(row)}
+          >
             <MdOutlineInventory color="#0066cc" fontSize="16px" />
           </button>
-          <button title="Xóa sản phẩm" className="icon_btn" onClick={() => handleDeleteEachProduct(row.product_id)}>
+          <button
+            title="Xóa sản phẩm"
+            className="icon_btn"
+            onClick={() => handleDeleteEachProduct(row.product_id)}
+          >
             <MdDeleteOutline color="red" fontSize="17px" />
           </button>
         </div>
@@ -286,14 +299,15 @@ export default function ManageInventory() {
 
   const customStyles = {
     content: {
-      top: '50%',
-      left: '50%',
-      right: 'auto',
-      bottom: 'auto',
-      marginRight: '-50%',
-      transform: 'translate(-50%, -50%)',
-      width: '650px',
-      height: '400px',
+      top: "50%",
+      left: "50%",
+      right: "auto",
+      bottom: "auto",
+      marginRight: "-50%",
+      transform: "translate(-50%, -50%)",
+      width: "700px",
+      height: "420px",
+      borderRadius: "20px",
     },
   };
 
@@ -303,136 +317,214 @@ export default function ManageInventory() {
     setProDate("");
     setQuantity("");
     setShow(false);
-  }
+  };
 
   return (
     <div className="manage-inventory-container">
-      {
-        loading ? (
-          <>
-            <div className="spinner-container ">
-              <Spinner animation="border" role="status" />
+      {loading ? (
+        <>
+          <div className="spinner-container ">
+            <Spinner animation="border" role="status" />
+          </div>
+        </>
+      ) : (
+        <>
+          <ToastContainer />
+          <div>
+            <div style={{ textAlign: "center" }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  nav("/create-product");
+                }}
+              >
+                Add Product
+              </button>
+
+              <button
+                className="btn btn-danger"
+                style={{ marginLeft: "20px" }}
+                onClick={() => handleDeleteExpProduct()}
+              >
+                Delete Expired Product
+              </button>
             </div>
-          </>
-        ) : (
-          <>
-            <ToastContainer />
-            <div >
-              <div style={{ textAlign: 'center' }}>
+
+            <div className="table-inven">
+              <DataTable
+                pagination
+                paginationPerPage={4}
+                paginationRowsPerPageOptions={[4, 6]}
+                columns={columns}
+                data={inventory}
+                className="table-content"
+              />
+            </div>
+          </div>
+          {showModal && selectedProduct && (
+            <Modal
+              isOpen={showModal}
+              onRequestClose={closeModal}
+              contentLabel="Edit Product"
+              style={customStyles}
+            >
+              <h2>Product Detail</h2>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <button
                   className="btn btn-primary"
-                  onClick={() => {
-                    nav("/create-product");
-                  }}
+                  onClick={() => setShow(true)}
                 >
-                  Add Product
-                </button>
-
-                <button
-                  className="btn btn-danger" style={{ marginLeft: "20px" }}
-                  onClick={() => handleDeleteExpProduct()}
-                >
-                  Delete Expired Product
-                </button>
-              </div>
-
-              <div className="table-inven">
-                <DataTable
-                  pagination
-                  paginationPerPage={4}
-                  paginationRowsPerPageOptions={[4, 6]}
-                  columns={columns}
-                  data={inventory}
-                  className="table-content"
-                />
-              </div>
-            </div>
-            {showModal && selectedProduct && (
-              <Modal
-                isOpen={showModal}
-                onRequestClose={closeModal}
-                contentLabel="Edit Product"
-                style={customStyles}
-              >
-                <h2>Product Detail</h2>
-
-                <button className="btn btn-primary" onClick={() => setShow(true)}>
                   Add Quantity
                 </button>
 
-                {
-                  show && (
-                    <div >
-                      <h4>Add quantity product</h4>
-                      <div style={{ marginBottom: '10px' }}>
-                        <label>Quantity:</label>
-                        <input
-                          type="number"
-                          value={quantity}
-                          onChange={(event) => setQuantity(event.target.value)}
-                        />
-                      </div>
-
-                      <div>
-                        <label>Production Date:</label>
-                        <input
-                          type="date"
-                          value={proDate}
-                          onChange={(event) => setProDate(event.target.value)}
-                        />
-                        <label>Expiration Date:</label>
-                        <input
-                          type="date"
-                          value={exDate}
-                          onChange={(event) => setExDate(event.target.value)}
-                        />
-                      </div>
-
-                      <button className="btn btn-primary" style={{ marginTop: "10px" }} onClick={() => handleAdd(proID)}>
-                        Create
-                      </button>
-                      <button className="btn btn-danger" style={{ marginTop: "10px", marginLeft: '20px' }} onClick={() => handleCancel()}>
-                        Cancel
-                      </button>
-                    </div>
-                  )
-                }
-
-
-                <div>
-                  <table className="table-prodetail-th">
-                    <thead>
-                      <tr>
-                        <th>Production Date</th>
-                        <th>Expiry Date</th>
-                        <th>Quantity</th>
-                      </tr>
-                    </thead>
-                  </table>
-
-                  <div className="prodetail-tb">
-                    <table className="table-prodetail-tb">
-                      <tbody>
-                        {proDetails.map((product, index) => (
-                          <tr key={index}>
-                            <td>{convertSQLDate(product.production_date)}</td>
-                            <td>{convertSQLDate(product.expiration_date)}</td>
-                            <td>{product.quantity}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-                <button style={{ marginTop: '20px' }} onClick={closeModal} className="btn btn-secondary">
+                <button onClick={closeModal} className="btn btn-secondary">
                   Close
                 </button>
-              </Modal >
-            )
-            }
-          </>
-        )
-      }
+              </div>
+
+              {show && (
+                <div>
+                  <h4>Add quantity product</h4>
+                  <div style={{ marginBottom: "10px" }}>
+                    <label>Quantity:</label>
+                    <input
+                      type="number"
+                      value={quantity}
+                      onChange={(event) => setQuantity(event.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label>Production Date:</label>
+                    <input
+                      type="date"
+                      value={proDate}
+                      onChange={(event) => setProDate(event.target.value)}
+                    />
+                    <label>Expiration Date:</label>
+                    <input
+                      type="date"
+                      value={exDate}
+                      onChange={(event) => setExDate(event.target.value)}
+                    />
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    style={{ marginTop: "10px" }}
+                    onClick={() => handleAdd(proID)}
+                  >
+                    Create
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    style={{ marginTop: "10px", marginLeft: "20px" }}
+                    onClick={() => handleCancel()}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+
+              <div>
+                <table
+                  className="table-prodetail"
+                  style={{
+                    width: "100%",
+                    marginTop: "10px",
+                    borderCollapse: "collapse",
+                  }}
+                >
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid black" }}>
+                      <th
+                        style={{
+                          padding: "5px",
+                          textAlign: "center",
+                        }}
+                      >
+                        Production Date
+                      </th>
+                      <th
+                        style={{
+                          padding: "20px 25px",
+                          textAlign: "center",
+                        }}
+                      >
+                        Expiry Date
+                      </th>
+                      <th
+                        style={{
+                          padding: "20px",
+                          textAlign: "center",
+                        }}
+                      >
+                        Quantity
+                      </th>
+                    </tr>
+                  </thead>
+                </table>
+                <div
+                  style={{
+                    maxHeight: "200px", // Adjust this value to your needs
+                    overflow: "auto",
+                  }}
+                >
+                  <table
+                    className="table-prodetail"
+                    style={{
+                      borderCollapse: "collapse",
+                      width: "100%",
+                      border: "none",
+                    }}
+                  >
+                    <tbody>
+                      {proDetails.map((product, index) => (
+                        <tr
+                          key={index}
+                          className="table-row"
+                          style={{ borderBottom: "1px solid grey" }}
+                        >
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {convertSQLDate(product.production_date)}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {convertSQLDate(product.expiration_date)}
+                          </td>
+                          <td
+                            style={{
+                              padding: "15px",
+                              textAlign: "center",
+                            }}
+                          >
+                            {product.quantity}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </Modal>
+          )}
+        </>
+      )}
     </div>
   );
 }
